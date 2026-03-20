@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Spin Wheel</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+
+<style>
+body{
+  margin:0;
+  font-family:Poppins;
+  background:#013220;
+  color:white;
+  text-align:center;
+}
+
+h1{
+  margin:20px;
+  color:#facc15;
+}
+
+/* SUBTITLE */
+.subtitle{
+  color:#facc15;
+  font-size:16px;
+  margin-top:-10px;
+}
+
+/* POINTER - inverted & positioned a bit lower */
+.pointer{
+  width:0;
+  height:0;
+  margin:auto;
+  border-left:15px solid transparent;
+  border-right:15px solid transparent;
+  border-top:25px solid black; /* arrow apex pointing down */
+  margin-bottom:-20px; /* wheel-এর উপরে কিছুটা নিচে নামানো */
+  margin-top:20px;
+  position: relative;
+  z-index: 2;
+}
+
+/* WHEEL */
+.container{
+  width:90vw;
+  max-width:340px;
+  margin:auto;
+}
+
+.wheel{
+  width:100%;
+  aspect-ratio:1;
+  border-radius:50%;
+  border:8px solid #facc15;
+  position:relative;
+  transition:transform 5s ease-out;
+
+  background:conic-gradient(
+    #facc15 0deg 60deg,
+    #fb923c 60deg 120deg,
+    #4ade80 120deg 180deg,
+    #3b82f6 180deg 240deg,
+    #ec4899 240deg 300deg,
+    #22d3ee 300deg 360deg
+  );
+}
+
+/* TEXT INSIDE WHEEL */
+.text{
+  position:absolute;
+  width:100%;
+  height:100%;
+  top:0;
+  left:0;
+}
+
+.text span{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform-origin:center;
+  font-size:14px;
+  font-weight:700;
+}
+
+/* rotate + position */
+.text span:nth-child(1){ transform: rotate(30deg) translate(0,-120px);}
+.text span:nth-child(2){ transform: rotate(90deg) translate(0,-120px);}
+.text span:nth-child(3){ transform: rotate(150deg) translate(0,-120px);}
+.text span:nth-child(4){ transform: rotate(210deg) translate(0,-120px);}
+.text span:nth-child(5){ transform: rotate(270deg) translate(0,-120px);}
+.text span:nth-child(6){ transform: rotate(330deg) translate(0,-120px);}
+
+/* BUTTON */
+button{
+  margin:30px;
+  padding:12px 25px;
+  font-size:18px;
+  background:#facc15;
+  border:none;
+  border-radius:10px;
+}
+
+/* POPUP */
+.popup{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,0.6);
+  z-index: 10;
+}
+
+.box{
+  background:white;
+  color:black;
+  padding:25px;
+  border-radius:12px;
+}
+
+/* CONFETTI */
+.confetti{
+  position:fixed;
+  width:8px;
+  height:8px;
+  top:-10px;
+  animation:fall linear forwards;
+}
+
+@keyframes fall{
+  to{
+    transform:translateY(100vh) rotate(720deg);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<h1>Salami Diben Koto?</h1>
+<div class="subtitle">Spin the wheel to claim your Eid Salami! 💸</div>
+
+<!-- POINTER -->
+<div class="pointer"></div>
+
+<div class="container">
+  <div class="wheel" id="wheel">
+    <!-- TEXT INSIDE WHEEL -->
+    <div class="text">
+      <span>Dua</span>
+      <span>2 tk</span>
+      <span>5 tk</span>
+      <span>10 tk</span>
+      <span>50 tk</span>
+      <span>100 tk</span>
+    </div>
+  </div>
+</div>
+
+<button onclick="spin()">SPIN NOW</button>
+
+<!-- POPUP -->
+<div class="popup" id="popup">
+  <div class="box">
+    <h2>🎉 Alhamdulillah!</h2>
+    <p>You have won: <b>Unlimited Dua🤲</b></p>
+    <button onclick="closePop()">Accept Dua</button>
+  </div>
+</div>
+
+<!-- SOUND -->
+<audio id="tick" src="https://www.soundjay.com/mechanical/sounds/tick-1.mp3"></audio>
+<audio id="win" src="https://www.soundjay.com/human/sounds/applause-8.mp3"></audio>
+
+<script>
+let spinning=false;
+let tickInterval;
+
+function spin(){
+  if(spinning) return;
+  spinning=true;
+
+  const wheel=document.getElementById("wheel");
+  const tick=document.getElementById("tick");
+
+  let spins=Math.floor(Math.random()*3)+4;
+
+  // Perfect fixed result - Dua
+  let finalAngle = spins*360 + 330;
+
+  wheel.style.transform="rotate("+finalAngle+"deg)";
+
+  tickInterval=setInterval(()=>{
+    tick.currentTime=0;
+    tick.play();
+  },120);
+
+  setTimeout(()=>{
+    clearInterval(tickInterval);
+
+    document.getElementById("popup").style.display="flex";
+    createConfetti();
+    document.getElementById("win").play();
+
+    spinning=false;
+  },5000);
+}
+
+function closePop(){
+  document.getElementById("popup").style.display="none";
+}
+
+function createConfetti(){
+  for(let i=0;i<60;i++){
+    let c=document.createElement("div");
+    c.className="confetti";
+    c.style.left=Math.random()*100+"%";
+    c.style.background="hsl("+Math.random()*360+",100%,50%)";
+    c.style.animationDuration=(Math.random()*2+2)+"s";
+    document.body.appendChild(c);
+
+    setTimeout(()=>c.remove(),4000);
+  }
+}
+</script>
+
+</body>
+</html>
